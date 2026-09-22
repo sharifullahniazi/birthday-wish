@@ -40,6 +40,26 @@
       position: relative;
     }
 
+    /* Music Floating Button */
+    .music-btn {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--light-lavender);
+      font-size: 1.2rem;
+      cursor: pointer;
+      z-index: 999;
+      box-shadow: 0 4px 12px rgba(123, 79, 163, 0.15);
+      transition: transform 0.2s ease;
+    }
+    .music-btn:active { transform: scale(0.9); }
+
     .container { 
       width: 100%; 
       max-width: 440px; 
@@ -48,24 +68,25 @@
       z-index: 10;
     }
 
-    /* Page Management */
+    /* Page Management with Enhanced Glassmorphism & Depth Zoom */
     .page {
       display: none;
       opacity: 0;
-      transform: translateY(15px);
-      transition: opacity 0.6s ease, transform 0.6s ease;
-      background: rgba(255, 255, 255, 0.88);
-      backdrop-filter: blur(10px);
-      padding: 35px 22px;
-      border-radius: 24px;
-      border: 1px solid var(--light-lavender);
-      box-shadow: 0 12px 30px rgba(123, 79, 163, 0.12);
+      transform: scale(0.94) translateY(20px);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 38px 24px;
+      border-radius: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 20px 40px rgba(123, 79, 163, 0.12), inset 0 0 0 1px rgba(230, 215, 255, 0.5);
     }
     
     .page.active {
       display: block;
       opacity: 1;
-      transform: translateY(0);
+      transform: scale(1) translateY(0);
     }
 
     /* Typography */
@@ -163,8 +184,8 @@
     }
     .reason-title { font-weight: 600; color: var(--deep-purple); margin-bottom: 4px; }
 
-    /* PAGE 5 — Polaroid Wall */
-    .gallery { display: flex; flex-direction: column; gap: 20px; margin-top: 15px; }
+    /* PAGE 5 — Polaroid Wall with Washi Tape Effect */
+    .gallery { display: flex; flex-direction: column; gap: 24px; margin-top: 15px; }
     .card { 
       background: var(--white); 
       padding: 10px 10px 16px 10px;
@@ -172,6 +193,20 @@
       box-shadow: 0 6px 16px rgba(53, 33, 63, 0.1); 
       border: 1px solid var(--light-lavender);
       width: 100%;
+      position: relative;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%) rotate(-2deg);
+      width: 90px;
+      height: 22px;
+      background: rgba(230, 215, 255, 0.7);
+      border: 1px dashed rgba(181, 126, 220, 0.4);
+      backdrop-filter: blur(2px);
+      z-index: 2;
     }
     .card:nth-child(1) { transform: rotate(-2deg); }
     .card:nth-child(2) { transform: rotate(1.5deg); }
@@ -263,6 +298,9 @@
   </style>
 </head>
 <body>
+
+  <!-- Floating Music Toggle -->
+  <button id="musicToggle" class="music-btn" onclick="toggleAudio()">🎵</button>
 
   <div class="container">
 
@@ -427,14 +465,31 @@
       }
     }
 
-    // 2. Audio Player
+    // 2. Audio Control
     function playAudio() {
       var music = document.getElementById("bgMusic");
+      var btn = document.getElementById("musicToggle");
       var playPromise = music.play();
       if (playPromise !== undefined) {
-        playPromise.catch(function(error) { console.log("Audio play caught:", error); });
+        playPromise.then(() => {
+          btn.innerText = "🎵";
+        }).catch(function(error) { 
+          console.log("Audio play caught:", error); 
+        });
       }
       launchConfetti();
+    }
+
+    function toggleAudio() {
+      const music = document.getElementById("bgMusic");
+      const btn = document.getElementById("musicToggle");
+      if (music.paused) {
+        music.play();
+        btn.innerText = "🎵";
+      } else {
+        music.pause();
+        btn.innerText = "🔇";
+      }
     }
 
     // 3. Confetti Cannon
@@ -481,17 +536,13 @@
       const yesBtn = document.getElementById('yesBtn');
 
       if (noAttemptCount === 1) {
-        // Attempt 1: Moves slightly
         noBtn.style.transform = 'translate(-40px, -25px)';
       } else if (noAttemptCount === 2) {
-        // Attempt 2: Jumps to another random location
         noBtn.style.transform = 'translate(60px, 35px)';
       } else if (noAttemptCount === 3) {
-        // Attempt 3: Says "Are you sure? 👀" and moves again
         noBtn.innerText = "Are you sure? 👀";
         noBtn.style.transform = 'translate(-70px, 45px)';
       } else if (noAttemptCount >= 4) {
-        // Attempt 4: Says "Fine. You win. 😭" and disappears, YES grows!
         noBtn.innerText = "Fine. You win. 😭";
         noBtn.style.transform = 'translate(0px, 60px)';
         
@@ -509,19 +560,54 @@
       document.getElementById('yes-response').style.display = 'block';
     }
 
-    // 7. Countdown Timer
-    const birthdayDate = new Date("2026-11-12T00:00:00").getTime(); 
-    setInterval(function() {
-      const now = new Date().getTime();
-      const diff = birthdayDate - now;
-      if (diff > 0) {
-        document.getElementById("days").innerText = Math.floor(diff / (1000 * 60 * 60 * 24));
-        document.getElementById("hours").innerText = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        document.getElementById("mins").innerText = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        document.getElementById("secs").innerText = Math.floor((diff % (1000 * 60)) / 1000);
-      }
-    }, 1000);
-  </script>
-</body>
-                                                           </html>
-  
+    // 7. Drifting Lavender Petals Background
+    function createPetal() {
+      const petal = document.createElement("div");
+      petal.innerText = ["🪻", "🌸", "✨", "💜"][Math.floor(Math.random() * 4)];
+      petal.style.position = "fixed";
+      petal.style.bottom = "-20px";
+      petal.style.left = Math.random() * 100 + "vw";
+      petal.style.fontSize = (Math.random() * 10 + 12) + "px";
+      petal.style.opacity = Math.random() * 0.5 + 0.3;
+      petal.style.pointerEvents = "none";
+      petal.style.zIndex = "2";
+      petal.style.transition = "transform 7s linear, opacity 7s linear";
+
+      document.body.appendChild(petal);
+
+      setTimeout(() => {
+        petal.style.transform = `translateY(-105vh) rotate(${Math.random() * 360}deg)`;
+        petal.style.opacity = "0";
+      }, 100);
+
+      setTimeout(() => petal.remove(), 7000);
+    }
+    setInterval(createPetal, 1200);
+
+    // 8. Interactive Touch Sparkle Trail
+    function spawnSparkle(x, y) {
+      const sparkle = document.createElement("span");
+      sparkle.innerText = "✨";
+      sparkle.style.position = "fixed";
+      sparkle.style.left = x + "px";
+      sparkle.style.top = y + "px";
+      sparkle.style.pointerEvents = "none";
+      sparkle.style.fontSize = "14px";
+      sparkle.style.zIndex = "9999";
+      sparkle.style.transition = "all 0.8s ease-out";
+
+      document.body.appendChild(sparkle);
+
+      setTimeout(() => {
+        sparkle.style.transform = "translateY(-20px) scale(0.2)";
+        sparkle.style.opacity = "0";
+      }, 50);
+
+      setTimeout(() => sparkle.remove(), 850);
+    }
+
+    document.addEventListener("touchmove", (e) => {
+      spawnSparkle(e.touches[0].clientX, e.touches[0].clientY);
+    });
+
+    
