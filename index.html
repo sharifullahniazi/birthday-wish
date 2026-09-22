@@ -17,12 +17,15 @@
       text-align: center; 
       padding: 20px 10px; 
       overflow-x: hidden;
+      position: relative;
     }
     .container { 
       width: 100%; 
       max-width: 450px; 
       margin: 0 auto; 
       text-align: center;
+      position: relative;
+      z-index: 10;
     }
     
     /* Header & Timer */
@@ -112,6 +115,31 @@
     }
     .letter-box h3 { color: #8a2be2; margin-bottom: 10px; text-align: center; }
     .letter-box p { text-align: center; margin-bottom: 10px; }
+
+    /* Floating Balloon Animation CSS */
+    .balloon {
+      position: fixed;
+      bottom: -100px;
+      opacity: 0.85;
+      border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+      z-index: 1;
+      animation: floatUp 8s linear infinite;
+      cursor: pointer;
+    }
+    .balloon::after {
+      content: "";
+      position: absolute;
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 14px;
+      background: rgba(0, 0, 0, 0.25);
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(0) rotate(0deg); opacity: 0.9; }
+      100% { transform: translateY(-120vh) rotate(20deg); opacity: 0; }
+    }
   </style>
 </head>
 <body>
@@ -159,7 +187,7 @@
     </div>
   </div>
 
-  <!-- Audio Element with Preload for Mobile -->
+  <!-- Audio Element with Preload -->
   <audio id="bgMusic" src="song.mp3" preload="auto" loop></audio>
 
   <script>
@@ -192,7 +220,6 @@
         btn.innerText = "Close Gift";
         letter.scrollIntoView({ behavior: 'smooth' });
         
-        // Play Audio with Mobile Promise Handler
         var playPromise = music.play();
         if (playPromise !== undefined) {
           playPromise.catch(function(error) {
@@ -201,6 +228,39 @@
         }
       }
     }
+
+    // Balloon Generator Script
+    function createBalloon() {
+      const balloon = document.createElement("div");
+      balloon.className = "balloon";
+      
+      // Fun festive balloon colors
+      const colors = ["#ff4d6d", "#ff758f", "#c77dff", "#9d4edd", "#70e000", "#ffb703", "#4cc9f0"];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const size = Math.floor(Math.random() * 15) + 40; // Size range: 40px - 55px
+      const left = Math.random() * 85; // Screen position 0-85%
+      const duration = Math.random() * 4 + 6; // Float speed: 6s - 10s
+
+      balloon.style.background = color;
+      balloon.style.width = size + "px";
+      balloon.style.height = (size * 1.25) + "px";
+      balloon.style.left = left + "vw";
+      balloon.style.animationDuration = duration + "s";
+
+      // Tap to Pop Balloon!
+      balloon.onclick = function() {
+        balloon.style.transform = "scale(1.6)";
+        balloon.style.opacity = "0";
+        balloon.style.transition = "all 0.15s ease-out";
+        setTimeout(() => balloon.remove(), 150);
+      };
+
+      document.body.appendChild(balloon);
+      setTimeout(() => balloon.remove(), duration * 1000);
+    }
+
+    // Create a new balloon every 800ms
+    setInterval(createBalloon, 800);
   </script>
 </body>
 </html>
