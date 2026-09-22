@@ -40,7 +40,7 @@
       position: relative;
     }
 
-    /* Music Floating Button */
+    /* Ambient Floating Music Toggle Button */
     .music-btn {
       position: fixed;
       top: 15px;
@@ -56,9 +56,10 @@
       cursor: pointer;
       z-index: 999;
       box-shadow: 0 4px 12px rgba(123, 79, 163, 0.15);
-      transition: transform 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .music-btn:active { transform: scale(0.9); }
 
     .container { 
       width: 100%; 
@@ -68,7 +69,7 @@
       z-index: 10;
     }
 
-    /* Page Management with Enhanced Glassmorphism & Depth Zoom */
+    /* Glassmorphism Page Transitions */
     .page {
       display: none;
       opacity: 0;
@@ -184,17 +185,18 @@
     }
     .reason-title { font-weight: 600; color: var(--deep-purple); margin-bottom: 4px; }
 
-    /* PAGE 5 — Polaroid Wall with Washi Tape Effect */
-    .gallery { display: flex; flex-direction: column; gap: 24px; margin-top: 15px; }
+    /* PAGE 5 — Polaroid Wall + Washi Tape */
+    .gallery { display: flex; flex-direction: column; gap: 24px; margin-top: 20px; }
     .card { 
+      position: relative;
       background: var(--white); 
-      padding: 10px 10px 16px 10px;
+      padding: 12px 10px 16px 10px;
       border-radius: 4px; 
-      box-shadow: 0 6px 16px rgba(53, 33, 63, 0.1); 
+      box-shadow: 0 8px 20px rgba(53, 33, 63, 0.1); 
       border: 1px solid var(--light-lavender);
       width: 100%;
-      position: relative;
     }
+    /* Decorative Washi Tape on Polaroid Top */
     .card::before {
       content: "";
       position: absolute;
@@ -203,8 +205,8 @@
       transform: translateX(-50%) rotate(-2deg);
       width: 90px;
       height: 22px;
-      background: rgba(230, 215, 255, 0.7);
-      border: 1px dashed rgba(181, 126, 220, 0.4);
+      background: rgba(230, 215, 255, 0.65);
+      border: 1px dashed rgba(181, 126, 220, 0.45);
       backdrop-filter: blur(2px);
       z-index: 2;
     }
@@ -299,7 +301,7 @@
 </head>
 <body>
 
-  <!-- Floating Music Toggle -->
+  <!-- Music Toggle Button -->
   <button id="musicToggle" class="music-btn" onclick="toggleAudio()">🎵</button>
 
   <div class="container">
@@ -468,14 +470,9 @@
     // 2. Audio Control
     function playAudio() {
       var music = document.getElementById("bgMusic");
-      var btn = document.getElementById("musicToggle");
       var playPromise = music.play();
       if (playPromise !== undefined) {
-        playPromise.then(() => {
-          btn.innerText = "🎵";
-        }).catch(function(error) { 
-          console.log("Audio play caught:", error); 
-        });
+        playPromise.catch(function(error) { console.log("Audio play caught:", error); });
       }
       launchConfetti();
     }
@@ -560,7 +557,20 @@
       document.getElementById('yes-response').style.display = 'block';
     }
 
-    // 7. Drifting Lavender Petals Background
+    // 7. Countdown Timer
+    const birthdayDate = new Date("2026-11-12T00:00:00").getTime(); 
+    setInterval(function() {
+      const now = new Date().getTime();
+      const diff = birthdayDate - now;
+      if (diff > 0) {
+        document.getElementById("days").innerText = Math.floor(diff / (1000 * 60 * 60 * 24));
+        document.getElementById("hours").innerText = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        document.getElementById("mins").innerText = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        document.getElementById("secs").innerText = Math.floor((diff % (1000 * 60)) / 1000);
+      }
+    }, 1000);
+
+    // 8. Drifting Lavender Petals Background
     function createPetal() {
       const petal = document.createElement("div");
       petal.innerText = ["🪻", "🌸", "✨", "💜"][Math.floor(Math.random() * 4)];
@@ -584,30 +594,10 @@
     }
     setInterval(createPetal, 1200);
 
-    // 8. Interactive Touch Sparkle Trail
+    // 9. Interactive Touch Sparkle Trail
     function spawnSparkle(x, y) {
       const sparkle = document.createElement("span");
       sparkle.innerText = "✨";
       sparkle.style.position = "fixed";
       sparkle.style.left = x + "px";
-      sparkle.style.top = y + "px";
-      sparkle.style.pointerEvents = "none";
-      sparkle.style.fontSize = "14px";
-      sparkle.style.zIndex = "9999";
-      sparkle.style.transition = "all 0.8s ease-out";
-
-      document.body.appendChild(sparkle);
-
-      setTimeout(() => {
-        sparkle.style.transform = "translateY(-20px) scale(0.2)";
-        sparkle.style.opacity = "0";
-      }, 50);
-
-      setTimeout(() => sparkle.remove(), 850);
-    }
-
-    document.addEventListener("touchmove", (e) => {
-      spawnSparkle(e.touches[0].clientX, e.touches[0].clientY);
-    });
-
-    
+      sparkle.style.top = y + "px"
