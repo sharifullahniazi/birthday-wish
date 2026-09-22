@@ -40,15 +40,6 @@
       position: relative;
     }
 
-    /* Floating Canvas / Particle Background */
-    #star-field {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      pointer-events: none;
-      z-index: 1;
-    }
-
     .container { 
       width: 100%; 
       max-width: 440px; 
@@ -57,7 +48,7 @@
       z-index: 10;
     }
 
-    /* Page / Step Management */
+    /* Page Management */
     .page {
       display: none;
       opacity: 0;
@@ -98,11 +89,17 @@
       cursor: pointer; 
       font-weight: 600; 
       box-shadow: 0 4px 15px rgba(181, 126, 220, 0.4); 
-      margin-top: 25px;
+      margin-top: 20px;
       display: inline-block;
-      transition: transform 0.2s ease, background-color 0.2s ease;
+      transition: all 0.3s ease;
     }
     .btn:active { transform: scale(0.96); }
+
+    .btn-secondary {
+      background: var(--soft-pink);
+      color: var(--text);
+      box-shadow: 0 4px 12px rgba(232, 191, 213, 0.5);
+    }
 
     /* PAGE 1 — Dark Entrance */
     .page-1-theme {
@@ -231,7 +228,29 @@
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    /* PAGE 7 — Final Letter Envelope */
+    /* PAGE 7 — RUNAWAY NO BUTTON GAME */
+    .btn-group {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin-top: 35px;
+      position: relative;
+      min-height: 90px;
+    }
+
+    #yesBtn.grow-yes {
+      transform: scale(1.35) !important;
+      background: var(--deep-purple) !important;
+      box-shadow: 0 8px 25px rgba(123, 79, 163, 0.5);
+    }
+
+    #noBtn {
+      position: relative;
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* PAGE 8 — Final Letter Envelope */
     .envelope {
       background: var(--white);
       border-radius: 16px;
@@ -244,9 +263,6 @@
   </style>
 </head>
 <body>
-
-  <!-- Starry Particle Background -->
-  <div id="star-field"></div>
 
   <div class="container">
 
@@ -349,11 +365,38 @@
         <p style="font-size: 1.1rem; font-weight: 600; margin-top: 10px;">“I hope this year gives you a thousand reasons to smile.”</p>
       </div>
 
-      <button class="btn" id="wish-btn" style="display:none;" onclick="nextPage(7)">One Last Thing 💌</button>
+      <button class="btn" id="wish-btn" style="display:none;" onclick="nextPage(7)">A Quick Question 🎁</button>
     </div>
 
-    <!-- PAGE 7: The Final Letter -->
+    <!-- PAGE 7: Special Gift Question (Runaway No Button) -->
     <div class="page" id="page-7">
+      <h2>Special Delivery 🎁</h2>
+      
+      <div id="question-area">
+        <p style="font-size: 1.1rem; margin-top: 10px; font-weight: 500; color: var(--deep-purple);">
+          I will send you a birthday gift. Will you please collect it? 🥺💜
+        </p>
+
+        <div class="btn-group">
+          <button class="btn" id="yesBtn" onclick="handleYes()">Yes</button>
+          <button class="btn btn-secondary" id="noBtn" onclick="handleNo()">No</button>
+        </div>
+      </div>
+
+      <!-- Response shown when YES is clicked -->
+      <div id="yes-response" style="display: none; animation: fadeIn 0.8s forwards;">
+        <p style="font-size: 1.2rem; font-weight: 600; color: var(--deep-purple); margin-bottom: 12px;">
+          Thank you so much! 💜
+        </p>
+        <p style="font-size: 1.05rem;">
+          You deserve more than I could ever give.
+        </p>
+        <button class="btn" onclick="nextPage(8)" style="margin-top: 30px;">One Last Thing 💌</button>
+      </div>
+    </div>
+
+    <!-- PAGE 8: The Final Letter -->
+    <div class="page" id="page-8">
       <h2>One Last Thing… 💌</h2>
       
       <div class="envelope">
@@ -389,7 +432,7 @@
       var music = document.getElementById("bgMusic");
       var playPromise = music.play();
       if (playPromise !== undefined) {
-        playPromise.catch(function(error) { console.log("Audio autoplay prevented:", error); });
+        playPromise.catch(function(error) { console.log("Audio play caught:", error); });
       }
       launchConfetti();
     }
@@ -398,7 +441,7 @@
     function launchConfetti() {
       if (typeof confetti === 'function') {
         confetti({
-          particleCount: 80,
+          particleCount: 85,
           spread: 70,
           origin: { y: 0.6 },
           colors: ['#B57EDC', '#7B4FA3', '#E6D7FF', '#E8BFD5', '#ffffff']
@@ -429,7 +472,44 @@
       }
     }
 
-    // 6. Countdown Timer Target Date
+    // 6. Runaway No Button Game Logic
+    let noAttemptCount = 0;
+
+    function handleNo() {
+      noAttemptCount++;
+      const noBtn = document.getElementById('noBtn');
+      const yesBtn = document.getElementById('yesBtn');
+
+      if (noAttemptCount === 1) {
+        // Attempt 1: Moves slightly
+        noBtn.style.transform = 'translate(-40px, -25px)';
+      } else if (noAttemptCount === 2) {
+        // Attempt 2: Jumps to another random location
+        noBtn.style.transform = 'translate(60px, 35px)';
+      } else if (noAttemptCount === 3) {
+        // Attempt 3: Says "Are you sure? 👀" and moves again
+        noBtn.innerText = "Are you sure? 👀";
+        noBtn.style.transform = 'translate(-70px, 45px)';
+      } else if (noAttemptCount >= 4) {
+        // Attempt 4: Says "Fine. You win. 😭" and disappears, YES grows!
+        noBtn.innerText = "Fine. You win. 😭";
+        noBtn.style.transform = 'translate(0px, 60px)';
+        
+        setTimeout(() => {
+          noBtn.style.display = 'none';
+          yesBtn.classList.add('grow-yes');
+          yesBtn.innerText = 'YES 💜';
+        }, 700);
+      }
+    }
+
+    function handleYes() {
+      launchConfetti();
+      document.getElementById('question-area').style.display = 'none';
+      document.getElementById('yes-response').style.display = 'block';
+    }
+
+    // 7. Countdown Timer
     const birthdayDate = new Date("2026-11-12T00:00:00").getTime(); 
     setInterval(function() {
       const now = new Date().getTime();
@@ -443,5 +523,5 @@
     }, 1000);
   </script>
 </body>
-            </html>
-            
+                                                           </html>
+  
