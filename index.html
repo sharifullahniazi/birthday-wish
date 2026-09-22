@@ -69,7 +69,7 @@
       z-index: 10;
     }
 
-    /* Page Visibility & Fixed Animation */
+    /* Page Visibility Logic */
     .page {
       display: none;
       background: rgba(255, 255, 255, 0.85);
@@ -82,19 +82,13 @@
     }
     
     .page.active {
-      display: block;
-      animation: pageEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      display: block !important;
+      animation: pageEntrance 0.4s ease-out forwards;
     }
 
     @keyframes pageEntrance {
-      0% {
-        opacity: 0;
-        transform: scale(0.92) translateY(20px);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-      }
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     /* Typography */
@@ -121,6 +115,7 @@
       margin-top: 20px;
       display: inline-block;
       transition: transform 0.2s ease;
+      touch-action: manipulation;
     }
     .btn:active { transform: scale(0.95); }
 
@@ -311,10 +306,10 @@
   <div class="container">
 
     <!-- PAGE 1: The Entrance -->
-    <div class="page page-1-theme active" id="page-1">
+    <div class="page page-1-theme active" id="page-1" style="display: block;">
       <h1 style="font-size: 3rem; margin-top: 20px;">Hey, you…</h1>
       <p style="margin-top: 15px; font-size: 1.1rem;">I made something special for you. 💜</p>
-      <button class="btn" onclick="nextPage(2); playAudio();" style="margin-top: 40px;">✨ Open it</button>
+      <button class="btn" onclick="goToPage(2)">✨ Open it</button>
     </div>
 
     <!-- PAGE 2: The Birthday Reveal -->
@@ -332,7 +327,7 @@
       </div>
 
       <p style="font-size: 0.9rem; color: var(--deep-purple);">Counting down to your special moment 🌸</p>
-      <button class="btn" onclick="nextPage(3); triggerPage3Animation();">There's more… ✨</button>
+      <button class="btn" onclick="goToPage(3)">There's more… ✨</button>
     </div>
 
     <!-- PAGE 3: Your Message Reveal -->
@@ -343,7 +338,7 @@
         <p class="fade-line" id="line2">…but I'm really glad I got to know you. 💜</p>
         <p class="fade-line" id="line3">You have a way of making ordinary moments feel a little more special.</p>
       </div>
-      <button class="btn" onclick="nextPage(4)">Things I Appreciate 🌸</button>
+      <button class="btn" onclick="goToPage(4)">Things I Appreciate 🌸</button>
     </div>
 
     <!-- PAGE 4: Things I Like About You -->
@@ -366,7 +361,7 @@
           <p style="font-size: 0.88rem;">The subtle, thoughtful things you do that you probably don't even notice.</p>
         </div>
       </div>
-      <button class="btn" onclick="nextPage(5)">Our Memories 📸</button>
+      <button class="btn" onclick="goToPage(5)">Our Memories 📸</button>
     </div>
 
     <!-- PAGE 5: Memories Wall -->
@@ -389,7 +384,7 @@
         </div>
       </div>
 
-      <button class="btn" onclick="nextPage(6)">Make a Wish 🕯️</button>
+      <button class="btn" onclick="goToPage(6)">Make a Wish 🕯️</button>
     </div>
 
     <!-- PAGE 6: Make a Wish -->
@@ -409,7 +404,7 @@
         <p style="font-size: 1.1rem; font-weight: 600; margin-top: 10px;">“I hope this year gives you a thousand reasons to smile.”</p>
       </div>
 
-      <button class="btn" id="wish-btn" style="display:none;" onclick="nextPage(7)">A Quick Question 🎁</button>
+      <button class="btn" id="wish-btn" style="display:none;" onclick="goToPage(7)">A Quick Question 🎁</button>
     </div>
 
     <!-- PAGE 7: Special Gift Question -->
@@ -434,7 +429,7 @@
         <p style="font-size: 1.05rem;">
           You deserve more than I could ever give.
         </p>
-        <button class="btn" onclick="nextPage(8)" style="margin-top: 30px;">One Last Thing 💌</button>
+        <button class="btn" onclick="goToPage(8)" style="margin-top: 30px;">One Last Thing 💌</button>
       </div>
     </div>
 
@@ -458,84 +453,109 @@
   <audio id="bgMusic" src="song.mp3" preload="auto" loop></audio>
 
   <script>
-    // 1. Navigation Controller (Fixed)
-    function nextPage(pageNum) {
-      document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active');
-      });
-      const targetPage = document.getElementById(`page-${pageNum}`);
-      if (targetPage) {
-        targetPage.classList.add('active');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    // CORE NAVIGATION ENGINE (Gives guaranteed execution)
+    function goToPage(num) {
+      var allPages = document.querySelectorAll('.page');
+      for (var i = 0; i < allPages.length; i++) {
+        allPages[i].style.display = 'none';
+        allPages[i].classList.remove('active');
+      }
+
+      var target = document.getElementById('page-' + num);
+      if (target) {
+        target.style.display = 'block';
+        target.classList.add('active');
+        window.scrollTo(0, 0);
+      }
+
+      // Safe secondary actions
+      if (num === 2) {
+        playAudio();
+        launchConfetti();
+      } else if (num === 3) {
+        triggerPage3Animation();
       }
     }
 
-    // 2. Audio Control
+    // Audio Controller
     function playAudio() {
-      const music = document.getElementById("bgMusic");
-      if (music) {
-        const playPromise = music.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(function(error) { console.log("Audio play caught:", error); });
+      try {
+        var music = document.getElementById("bgMusic");
+        if (music) {
+          var p = music.play();
+          if (p !== undefined) { p.catch(function(e) {}); }
         }
-      }
-      launchConfetti();
+      } catch(e) {}
     }
 
     function toggleAudio() {
-      const music = document.getElementById("bgMusic");
-      const btn = document.getElementById("musicToggle");
-      if (music.paused) {
-        music.play();
-        btn.innerText = "🎵";
-      } else {
-        music.pause();
-        btn.innerText = "🔇";
-      }
+      try {
+        var music = document.getElementById("bgMusic");
+        var btn = document.getElementById("musicToggle");
+        if (music.paused) {
+          music.play();
+          btn.innerText = "🎵";
+        } else {
+          music.pause();
+          btn.innerText = "🔇";
+        }
+      } catch(e) {}
     }
 
-    // 3. Confetti Cannon
+    // Confetti Cannon
     function launchConfetti() {
-      if (typeof confetti === 'function') {
-        confetti({
-          particleCount: 85,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ['#B57EDC', '#7B4FA3', '#E6D7FF', '#E8BFD5', '#ffffff']
-        });
-      }
+      try {
+        if (typeof confetti === 'function') {
+          confetti({
+            particleCount: 85,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#B57EDC', '#7B4FA3', '#E6D7FF', '#E8BFD5', '#ffffff']
+          });
+        }
+      } catch(e) {}
     }
 
-    // 4. Page 3 Gradual Text Fade
+    // Page 3 Gradual Text Fade
     function triggerPage3Animation() {
-      setTimeout(() => document.getElementById('line1').classList.add('visible'), 400);
-      setTimeout(() => document.getElementById('line2').classList.add('visible'), 1600);
-      setTimeout(() => document.getElementById('line3').classList.add('visible'), 2800);
+      setTimeout(function() {
+        var l1 = document.getElementById('line1');
+        if (l1) l1.classList.add('visible');
+      }, 400);
+      setTimeout(function() {
+        var l2 = document.getElementById('line2');
+        if (l2) l2.classList.add('visible');
+      }, 1600);
+      setTimeout(function() {
+        var l3 = document.getElementById('line3');
+        if (l3) l3.classList.add('visible');
+      }, 2800);
     }
 
-    // 5. Candle Blow Action
+    // Candle Blow Action
     function blowCandle() {
-      const flame = document.getElementById('flame');
-      const wishText = document.getElementById('wish-text');
-      const wishBtn = document.getElementById('wish-btn');
+      var flame = document.getElementById('flame');
+      var wishText = document.getElementById('wish-text');
+      var wishBtn = document.getElementById('wish-btn');
       
-      if (flame && flame.style.opacity !== '0') {
+      if (flame) {
         flame.style.opacity = '0';
         launchConfetti();
-        setTimeout(() => {
-          wishText.style.display = 'block';
-          wishBtn.style.display = 'inline-block';
+        setTimeout(function() {
+          if (wishText) wishText.style.display = 'block';
+          if (wishBtn) wishBtn.style.display = 'inline-block';
         }, 400);
       }
     }
 
-    // 6. Runaway No Button Game Logic
-    let noAttemptCount = 0;
-
+    // Runaway No Button Game Logic
+    var noAttemptCount = 0;
     function handleNo() {
       noAttemptCount++;
-      const noBtn = document.getElementById('noBtn');
-      const yesBtn = document.getElementById('yesBtn');
+      var noBtn = document.getElementById('noBtn');
+      var yesBtn = document.getElementById('yesBtn');
+
+      if (!noBtn || !yesBtn) return;
 
       if (noAttemptCount === 1) {
         noBtn.style.transform = 'translate(-40px, -25px)';
@@ -548,7 +568,7 @@
         noBtn.innerText = "Fine. You win. 😭";
         noBtn.style.transform = 'translate(0px, 60px)';
         
-        setTimeout(() => {
+        setTimeout(function() {
           noBtn.style.display = 'none';
           yesBtn.classList.add('grow-yes');
           yesBtn.innerText = 'YES 💜';
@@ -558,55 +578,42 @@
 
     function handleYes() {
       launchConfetti();
-      document.getElementById('question-area').style.display = 'none';
-      document.getElementById('yes-response').style.display = 'block';
+      var qArea = document.getElementById('question-area');
+      var yResp = document.getElementById('yes-response');
+      if (qArea) qArea.style.display = 'none';
+      if (yResp) yResp.style.display = 'block';
     }
 
-    // 7. Countdown Timer
-    const birthdayDate = new Date("2026-11-12T00:00:00").getTime(); 
+    // Countdown Timer (Using numeric Date values to avoid mobile date format issues)
+    var birthdayTarget = new Date(2026, 10, 12, 0, 0, 0).getTime(); 
     setInterval(function() {
-      const now = new Date().getTime();
-      const diff = birthdayDate - now;
+      var now = new Date().getTime();
+      var diff = birthdayTarget - now;
       if (diff > 0) {
-        document.getElementById("days").innerText = Math.floor(diff / (1000 * 60 * 60 * 24));
-        document.getElementById("hours").innerText = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        document.getElementById("mins").innerText = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        document.getElementById("secs").innerText = Math.floor((diff % (1000 * 60)) / 1000);
+        var d = document.getElementById("days");
+        var h = document.getElementById("hours");
+        var m = document.getElementById("mins");
+        var s = document.getElementById("secs");
+        if (d) d.innerText = Math.floor(diff / (1000 * 60 * 60 * 24));
+        if (h) h.innerText = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        if (m) m.innerText = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        if (s) s.innerText = Math.floor((diff % (1000 * 60)) / 1000);
       }
     }, 1000);
 
-    // 8. Drifting Lavender Petals Background
+    // Drifting Lavender Petals Background
     function createPetal() {
-      const petal = document.createElement("div");
-      petal.innerText = ["🪻", "🌸", "✨", "💜"][Math.floor(Math.random() * 4)];
-      petal.style.position = "fixed";
-      petal.style.bottom = "-20px";
-      petal.style.left = Math.random() * 100 + "vw";
-      petal.style.fontSize = (Math.random() * 10 + 12) + "px";
-      petal.style.opacity = Math.random() * 0.5 + 0.3;
-      petal.style.pointerEvents = "none";
-      petal.style.zIndex = "2";
-      petal.style.transition = "transform 7s linear, opacity 7s linear";
+      try {
+        var petal = document.createElement("div");
+        var icons = ["🪻", "🌸", "✨", "💜"];
+        petal.innerText = icons[Math.floor(Math.random() * icons.length)];
+        petal.style.position = "fixed";
+        petal.style.bottom = "-20px";
+        petal.style.left = Math.random() * 100 + "vw";
+        petal.style.fontSize = (Math.random() * 10 + 12) + "px";
+        petal.style.opacity = Math.random() * 0.5 + 0.3;
+        petal.style.pointerEvents = "none";
+        petal.style.zIndex = "2";
+        petal.style.transition = "transform 7s linear, opacity 7s linear";
 
-      document.body.appendChild(petal);
-
-      setTimeout(() => {
-        petal.style.transform = `translateY(-105vh) rotate(${Math.random() * 360}deg)`;
-        petal.style.opacity = "0";
-      }, 100);
-
-      setTimeout(() => petal.remove(), 7000);
-    }
-    setInterval(createPetal, 1200);
-
-    // 9. Interactive Touch Sparkle Trail
-    function spawnSparkle(x, y) {
-      const sparkle = document.createElement("span");
-      sparkle.innerText = "✨";
-      sparkle.style.position = "fixed";
-      sparkle.style.left = x + "px";
-      sparkle.style.top = y + "px";
-      sparkle.style.pointerEvents = "none";
-      sparkle.style.fontSize = "14px";
-      sparkle.style.zIndex = "9999";
-      sparkle.
+        document.body.
