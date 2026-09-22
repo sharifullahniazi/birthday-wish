@@ -12,7 +12,7 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
     }
     body { 
-      background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); 
+      background: linear-gradient(135deg, #e6e6fa 0%, #d8bfd8 100%); 
       color: #333; 
       text-align: center; 
       padding: 20px 10px; 
@@ -26,7 +26,7 @@
     }
     
     /* Header & Timer */
-    h1 { font-size: 2rem; margin-bottom: 8px; color: #d63384; text-align: center; }
+    h1 { font-size: 2rem; margin-bottom: 8px; color: #8a2be2; text-align: center; }
     p.subtitle { font-size: 1rem; color: #555; margin-bottom: 20px; text-align: center; }
     
     .timer-box { 
@@ -42,7 +42,7 @@
       gap: 8px; 
       font-weight: bold; 
       font-size: 1.1rem; 
-      color: #d63384; 
+      color: #8a2be2; 
     }
     .timer div { 
       background: #fff; 
@@ -58,8 +58,8 @@
       font-weight: normal; 
     }
 
-    /* Gallery - Fixed Image Sizing for Mobile */
-    .section-title { font-size: 1.4rem; color: #d63384; margin: 25px 0 15px; text-align: center; }
+    /* Gallery */
+    .section-title { font-size: 1.4rem; color: #8a2be2; margin: 25px 0 15px; text-align: center; }
     .gallery { display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px; }
     
     .card { 
@@ -85,7 +85,7 @@
 
     /* Gift Button & Letter Section */
     .gift-btn { 
-      background: #d63384; 
+      background: #8a2be2; 
       color: white; 
       border: none; 
       padding: 15px 30px; 
@@ -93,7 +93,7 @@
       border-radius: 30px; 
       cursor: pointer; 
       font-weight: bold; 
-      box-shadow: 0 4px 12px rgba(214, 51, 132, 0.4); 
+      box-shadow: 0 4px 12px rgba(138, 43, 226, 0.4); 
       margin-bottom: 15px;
     }
     .gift-btn:active {
@@ -110,7 +110,7 @@
       line-height: 1.6; 
       color: #444; 
     }
-    .letter-box h3 { color: #d63384; margin-bottom: 10px; text-align: center; }
+    .letter-box h3 { color: #8a2be2; margin-bottom: 10px; text-align: center; }
     .letter-box p { text-align: center; margin-bottom: 10px; }
   </style>
 </head>
@@ -149,7 +149,7 @@
 
     <!-- Digital Gift Letter -->
     <h2 class="section-title">🎁 A Surprise For You</h2>
-    <button class="gift-btn" id="openBtn" onclick="toggleGift()">Tap to Open Birthday Gift</button>
+    <button class="gift-btn" id="openBtn" onclick="toggleGift()">Tap to Open Birthday Gift 🎵</button>
     
     <div class="letter-box" id="letter">
       <h3>Dearest Friend,</h3>
@@ -159,8 +159,11 @@
     </div>
   </div>
 
+  <!-- Audio Element for Song -->
+  <audio id="bgMusic" src="song.mp3" loop></audio>
+
   <script>
-    // Countdown Timer Target Date (YYYY-MM-DD)
+    // Countdown Timer Target Date
     const birthdayDate = new Date("2026-11-12T00:00:00").getTime(); 
     
     setInterval(function() {
@@ -174,18 +177,21 @@
       }
     }, 1000);
 
-    // Gift Button Click Function
+    // Gift & Music Toggle Function
     function toggleGift() {
       var letter = document.getElementById("letter");
       var btn = document.getElementById("openBtn");
+      var music = document.getElementById("bgMusic");
       
       if (letter.style.display === "block") {
         letter.style.display = "none";
-        btn.innerText = "Tap to Open Birthday Gift";
+        btn.innerText = "Tap to Open Birthday Gift 🎵";
+        music.pause();
       } else {
         letter.style.display = "block";
         btn.innerText = "Close Gift";
         letter.scrollIntoView({ behavior: 'smooth' });
+        music.play();
       }
     }
   </script>
