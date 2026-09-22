@@ -159,8 +159,8 @@
     </div>
   </div>
 
-  <!-- Audio Element for Song -->
-  <audio id="bgMusic" src="song.mp3" loop></audio>
+  <!-- Audio Element with Preload for Mobile -->
+  <audio id="bgMusic" src="song.mp3" preload="auto" loop></audio>
 
   <script>
     // Countdown Timer Target Date
@@ -191,7 +191,14 @@
         letter.style.display = "block";
         btn.innerText = "Close Gift";
         letter.scrollIntoView({ behavior: 'smooth' });
-        music.play();
+        
+        // Play Audio with Mobile Promise Handler
+        var playPromise = music.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(function(error) {
+            console.log("Audio play failed:", error);
+          });
+        }
       }
     }
   </script>
