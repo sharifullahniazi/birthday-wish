@@ -40,6 +40,27 @@
       position: relative;
     }
 
+    /* Floating Drifting Petals */
+    .petal {
+      position: fixed;
+      bottom: -30px;
+      pointer-events: none;
+      z-index: 1;
+      animation: floatUp linear forwards;
+      user-select: none;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0.7;
+      }
+      100% {
+        transform: translateY(-115vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
     /* Floating Glass Music Button */
     .glass-music-btn {
       position: fixed;
@@ -565,6 +586,27 @@
         document.getElementById("secs").innerText = Math.floor((diff % (1000 * 60)) / 1000);
       }
     }, 1000);
+
+    // 8. Drifting Petals Background Animation
+    function createPetal() {
+      const petal = document.createElement('div');
+      petal.className = 'petal';
+      const petals = ['🪻', '🌸', '✨', '💜'];
+      petal.innerText = petals[Math.floor(Math.random() * petals.length)];
+      petal.style.left = Math.random() * 100 + 'vw';
+      petal.style.fontSize = (Math.random() * 10 + 12) + 'px';
+      
+      const duration = Math.random() * 4 + 6; // Floats up between 6s to 10s
+      petal.style.animationDuration = duration + 's';
+      
+      document.body.appendChild(petal);
+      
+      setTimeout(() => {
+        petal.remove();
+      }, duration * 1000);
+    }
+    setInterval(createPetal, 700);
   </script>
 </body>
-</html>
+          </html>
+          
