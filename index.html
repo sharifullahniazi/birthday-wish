@@ -40,17 +40,6 @@
       position: relative;
     }
 
-    /* Interactive Trail Canvas overlay */
-    #trailCanvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      z-index: 9998;
-    }
-
     /* Floating Drifting Petals */
     .petal {
       position: fixed;
@@ -309,7 +298,65 @@
       transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    /* PAGE 8 — Final Letter Envelope */
+    /* PAGE 8 — Voice Note Card & Envelope */
+    .voice-card {
+      background: var(--white);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 20px;
+      border: 1px solid var(--light-lavender);
+      box-shadow: 0 4px 15px rgba(123, 79, 163, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .voice-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--deep-purple);
+    }
+    .voice-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .voice-play-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--lavender);
+      color: var(--white);
+      border: none;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(181, 126, 220, 0.35);
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+    }
+    .voice-play-btn:active { transform: scale(0.92); }
+    .voice-progress-container {
+      flex-grow: 1;
+      height: 8px;
+      background: var(--bg);
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 1px solid var(--light-lavender);
+    }
+    .voice-progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--lavender), var(--deep-purple));
+      border-radius: 10px;
+      transition: width 0.1s linear;
+    }
+
     .envelope {
       background: var(--white);
       border-radius: 16px;
@@ -322,9 +369,6 @@
   </style>
 </head>
 <body>
-
-  <!-- Sparkle/Petal Trail Canvas Overlay -->
-  <canvas id="trailCanvas"></canvas>
 
   <!-- Floating Glass Music Toggle Button -->
   <button id="musicToggle" class="glass-music-btn" onclick="toggleAudio()" aria-label="Toggle Music">🎵</button>
@@ -460,10 +504,25 @@
       </div>
     </div>
 
-    <!-- PAGE 8: The Final Letter -->
+    <!-- PAGE 8: The Final Letter & Voice Note -->
     <div class="page" id="page-8">
       <h2>One Last Thing… 💌</h2>
       
+      <!-- Dedicated Voice Note Player Card -->
+      <div class="voice-card">
+        <div class="voice-header">
+          <span>🎙️ Voice Message For You</span>
+          <span id="voiceTimer" style="font-size: 0.78rem; opacity: 0.8;">0:00</span>
+        </div>
+        <div class="voice-controls">
+          <button class="voice-play-btn" id="voicePlayBtn" onclick="toggleVoiceNote()">▶</button>
+          <div class="voice-progress-container" onclick="seekVoiceNote(event)">
+            <div class="voice-progress-bar" id="voiceProgressBar"></div>
+          </div>
+        </div>
+        <audio id="voiceNoteAudio" src="voicenote.mp3" preload="metadata"></audio>
+      </div>
+
       <div class="envelope">
         <p style="text-align: left; margin-bottom: 12px;">Dearest,</p>
         <p style="text-align: left; margin-bottom: 12px;">Whatever this year brings, I hope it is kind to you. Keep smiling, keep being yourself, and keep making the world a little brighter just by being in it.</p>
@@ -520,101 +579,49 @@
       }
     }
 
-    // 3. Confetti Cannon
-    function launchConfetti() {
-      if (typeof confetti === 'function') {
-        confetti({
-          particleCount: 85,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ['#B57EDC', '#7B4FA3', '#E6D7FF', '#E8BFD5', '#ffffff']
-        });
+    // 3. Voice Note Audio Controller with Background Music Volume Fading
+    const bgMusic = document.getElementById("bgMusic");
+    const voiceNote = document.getElementById("voiceNoteAudio");
+    const voicePlayBtn = document.getElementById("voicePlayBtn");
+    const voiceProgressBar = document.getElementById("voiceProgressBar");
+    const voiceTimer = document.getElementById("voiceTimer");
+
+    function fadeMusicVolume(targetVolume) {
+      if (!bgMusic) return;
+      let currentVol = bgMusic.volume;
+      const step = 0.05;
+      const interval = setInterval(() => {
+        if (Math.abs(currentVol - targetVolume) < step) {
+          bgMusic.volume = targetVolume;
+          clearInterval(interval);
+        } else if (currentVol < targetVolume) {
+          currentVol += step;
+          bgMusic.volume = currentVol;
+        } else {
+          currentVol -= step;
+          bgMusic.volume = currentVol;
+        }
+      }, 50);
+    }
+
+    function toggleVoiceNote() {
+      if (!voiceNote) return;
+
+      if (voiceNote.paused) {
+        voiceNote.play();
+        voicePlayBtn.innerText = "⏸";
+        fadeMusicVolume(0.15); // Duck background music volume down to 15%
+      } else {
+        voiceNote.pause();
+        voicePlayBtn.innerText = "▶";
+        fadeMusicVolume(1.0); // Restore background music volume
       }
     }
 
-    // 4. Page 3 Gradual Text Fade
-    function triggerPage3Animation() {
-      setTimeout(() => document.getElementById('line1').classList.add('visible'), 400);
-      setTimeout(() => document.getElementById('line2').classList.add('visible'), 1600);
-      setTimeout(() => document.getElementById('line3').classList.add('visible'), 2800);
-    }
+    if (voiceNote) {
+      voiceNote.addEventListener("timeupdate", () => {
+        if (voiceNote.duration) {
+          const percent = (voiceNote.currentTime / voiceNote.duration) * 100;
+          voiceProgressBar.style.width = percent + "%";
 
-    // 5. Candle Blow Action
-    function blowCandle() {
-      const flame = document.getElementById('flame');
-      const wishText = document.getElementById('wish-text');
-      const wishBtn = document.getElementById('wish-btn');
-      
-      if (flame.style.opacity !== '0') {
-        flame.style.opacity = '0';
-        launchConfetti();
-        setTimeout(() => {
-          wishText.style.display = 'block';
-          wishBtn.style.display = 'inline-block';
-        }, 400);
-      }
-    }
-
-    // 6. Runaway No Button Game Logic
-    let noAttemptCount = 0;
-
-    function handleNo() {
-      noAttemptCount++;
-      const noBtn = document.getElementById('noBtn');
-      const yesBtn = document.getElementById('yesBtn');
-
-      if (noAttemptCount === 1) {
-        noBtn.style.transform = 'translate(-40px, -25px)';
-      } else if (noAttemptCount === 2) {
-        noBtn.style.transform = 'translate(60px, 35px)';
-      } else if (noAttemptCount === 3) {
-        noBtn.innerText = "Are you sure? 👀";
-        noBtn.style.transform = 'translate(-70px, 45px)';
-      } else if (noAttemptCount >= 4) {
-        noBtn.innerText = "Fine. You win. 😭";
-        noBtn.style.transform = 'translate(0px, 60px)';
-        
-        setTimeout(() => {
-          noBtn.style.display = 'none';
-          yesBtn.classList.add('grow-yes');
-          yesBtn.innerText = 'YES 💜';
-        }, 700);
-      }
-    }
-
-    function handleYes() {
-      launchConfetti();
-      document.getElementById('question-area').style.display = 'none';
-      document.getElementById('yes-response').style.display = 'block';
-    }
-
-    // 7. Countdown Timer
-    const birthdayDate = new Date("2026-11-12T00:00:00").getTime(); 
-    setInterval(function() {
-      const now = new Date().getTime();
-      const diff = birthdayDate - now;
-      if (diff > 0) {
-        document.getElementById("days").innerText = Math.floor(diff / (1000 * 60 * 60 * 24));
-        document.getElementById("hours").innerText = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        document.getElementById("mins").innerText = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        document.getElementById("secs").innerText = Math.floor((diff % (1000 * 60)) / 1000);
-      }
-    }, 1000);
-
-    // 8. Drifting Petals Background Animation
-    function createPetal() {
-      const petal = document.createElement('div');
-      petal.className = 'petal';
-      const petals = ['🪻', '🌸', '✨', '💜'];
-      petal.innerText = petals[Math.floor(Math.random() * petals.length)];
-      petal.style.left = Math.random() * 100 + 'vw';
-      petal.style.fontSize = (Math.random() * 10 + 12) + 'px';
-      
-      const duration = Math.random() * 4 + 6; // Floats up between 6s to 10s
-      petal.style.animationDuration = duration + 's';
-      
-      document.body.appendChild(petal);
-      
-      setTimeout(() => {
-        petal.remove();
-      },
+          const mins = Math.floor(voiceNote.currentTi
