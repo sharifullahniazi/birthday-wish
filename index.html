@@ -40,6 +40,33 @@
       position: relative;
     }
 
+    /* Floating Glass Music Button */
+    .glass-music-btn {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 4px 15px rgba(123, 79, 163, 0.15);
+      font-size: 1.2rem;
+      cursor: pointer;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    .glass-music-btn:active {
+      transform: scale(0.92);
+    }
+
     .container { 
       width: 100%; 
       max-width: 440px; 
@@ -264,6 +291,9 @@
 </head>
 <body>
 
+  <!-- Floating Glass Music Toggle Button -->
+  <button id="musicToggle" class="glass-music-btn" onclick="toggleAudio()" aria-label="Toggle Music">🎵</button>
+
   <div class="container">
 
     <!-- PAGE 1: The Entrance -->
@@ -427,14 +457,32 @@
       }
     }
 
-    // 2. Audio Player
+    // 2. Audio Player & Glass Toggle
     function playAudio() {
       var music = document.getElementById("bgMusic");
+      var btn = document.getElementById("musicToggle");
       var playPromise = music.play();
       if (playPromise !== undefined) {
-        playPromise.catch(function(error) { console.log("Audio play caught:", error); });
+        playPromise.then(() => {
+          if (btn) btn.innerText = "🎵";
+        }).catch(function(error) { console.log("Audio play caught:", error); });
       }
       launchConfetti();
+    }
+
+    function toggleAudio() {
+      var music = document.getElementById("bgMusic");
+      var btn = document.getElementById("musicToggle");
+      if (!music) return;
+
+      if (music.paused) {
+        music.play().then(() => {
+          if (btn) btn.innerText = "🎵";
+        }).catch(e => console.log(e));
+      } else {
+        music.pause();
+        if (btn) btn.innerText = "🔇";
+      }
     }
 
     // 3. Confetti Cannon
@@ -481,17 +529,13 @@
       const yesBtn = document.getElementById('yesBtn');
 
       if (noAttemptCount === 1) {
-        // Attempt 1: Moves slightly
         noBtn.style.transform = 'translate(-40px, -25px)';
       } else if (noAttemptCount === 2) {
-        // Attempt 2: Jumps to another random location
         noBtn.style.transform = 'translate(60px, 35px)';
       } else if (noAttemptCount === 3) {
-        // Attempt 3: Says "Are you sure? 👀" and moves again
         noBtn.innerText = "Are you sure? 👀";
         noBtn.style.transform = 'translate(-70px, 45px)';
       } else if (noAttemptCount >= 4) {
-        // Attempt 4: Says "Fine. You win. 😭" and disappears, YES grows!
         noBtn.innerText = "Fine. You win. 😭";
         noBtn.style.transform = 'translate(0px, 60px)';
         
@@ -523,5 +567,4 @@
     }, 1000);
   </script>
 </body>
-  </html>
-                                                                                              
+</html>
