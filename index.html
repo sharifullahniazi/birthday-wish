@@ -596,10 +596,10 @@
           clearInterval(interval);
         } else if (currentVol < targetVolume) {
           currentVol += step;
-          bgMusic.volume = currentVol;
+          bgMusic.volume = Math.min(1, currentVol);
         } else {
           currentVol -= step;
-          bgMusic.volume = currentVol;
+          bgMusic.volume = Math.max(0, currentVol);
         }
       }, 50);
     }
@@ -610,7 +610,7 @@
       if (voiceNote.paused) {
         voiceNote.play();
         voicePlayBtn.innerText = "⏸";
-        fadeMusicVolume(0.15); // Duck background music volume down to 15%
+        fadeMusicVolume(0.15); // Smoothly fade background music down to 15%
       } else {
         voiceNote.pause();
         voicePlayBtn.innerText = "▶";
@@ -624,4 +624,4 @@
           const percent = (voiceNote.currentTime / voiceNote.duration) * 100;
           voiceProgressBar.style.width = percent + "%";
 
-          const mins = Math.floor(voiceNote.currentTi
+          const mins = Ma
